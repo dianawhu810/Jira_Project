@@ -48,6 +48,18 @@ resource "aws_subnet" "public-subnet1" {
     Name = "public-subnet1"
   }
 }
+# Public Subnet 2
+# -----------------------
+resource "aws_subnet" "public-subnet2" {
+  vpc_id                  = aws_vpc.ProdVPC.id
+  cidr_block              = "10.0.2.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "us-east-1b"
+
+  tags = {
+    Name = "public-subnet2"
+  }
+}
 
 # -----------------------
 # Route Table (Public)
@@ -74,5 +86,10 @@ resource "aws_route" "default_route" {
 # -----------------------
 resource "aws_route_table_association" "public_assoc" {
   subnet_id      = aws_subnet.public-subnet1.id
+  route_table_id = aws_route_table.public_rtb.id
+}
+
+resource "aws_route_table_association" "public_assoc2" {
+  subnet_id      = aws_subnet.public-subnet2.id
   route_table_id = aws_route_table.public_rtb.id
 }
