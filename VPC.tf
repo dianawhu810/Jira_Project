@@ -36,7 +36,7 @@ resource "aws_internet_gateway" "ProdVPCIGW" {
 }
 
 # -----------------------
-# Public Subnet
+# Public Subnet 1
 # -----------------------
 resource "aws_subnet" "public-subnet1" {
   vpc_id                  = aws_vpc.ProdVPC.id
@@ -48,6 +48,8 @@ resource "aws_subnet" "public-subnet1" {
     Name = "public-subnet1"
   }
 }
+
+# -----------------------
 # Public Subnet 2
 # -----------------------
 resource "aws_subnet" "public-subnet2" {
@@ -92,4 +94,42 @@ resource "aws_route_table_association" "public_assoc" {
 resource "aws_route_table_association" "public_assoc2" {
   subnet_id      = aws_subnet.public-subnet2.id
   route_table_id = aws_route_table.public_rtb.id
+}
+
+# -----------------------
+# Security Group
+# -----------------------
+resource "aws_security_group" "ProdVPC_SG" {
+  name        = "ProdVPC_SG"
+  description = "Security group for ProdVPC"
+  vpc_id      = aws_vpc.ProdVPC.id
+
+  # Ingress rules
+  ingress {
+    description = "Allow SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Allow HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Egress rule (allow all outbound traffic)
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "ProdVPC_SG"
+  }
 }
