@@ -21,3 +21,8 @@ variable "subnet_cidr1" {
 variable "subnet_cidr2" {
   type = string
 }
+
+variable "environment" {
+  description = "Deployment environment (e.g. dev, stage, prod)"
+  type        = string
+}
