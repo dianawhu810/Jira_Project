@@ -131,5 +131,5 @@ resource "aws_security_group" "ProdVPC_SG" {
 
 tags = {
   Name = var.sg_name
-  }
+}
 }
