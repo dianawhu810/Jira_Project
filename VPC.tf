@@ -10,17 +10,17 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = var.region"
 }
 
 # -----------------------
 # VPC
 # -----------------------
-resource "aws_vpc" "ProdVPC" {
-  cidr_block = "10.0.1.0/16"
+resource "aws_vpc" "this" {
+  cidr_block = var.vpc_cidr
 
   tags = {
-    Name = "ProdVPC"
+    Name = var.vpc_name
   }
 }
 
@@ -40,7 +40,7 @@ resource "aws_internet_gateway" "ProdVPCIGW" {
 # -----------------------
 resource "aws_subnet" "public-subnet1" {
   vpc_id                  = aws_vpc.ProdVPC.id
-  cidr_block              = "10.0.0.0/24"
+  cidr_block              = var.subnet_cidr1
   map_public_ip_on_launch = true
   availability_zone       = "us-east-1a"
 
@@ -54,7 +54,7 @@ resource "aws_subnet" "public-subnet1" {
 # -----------------------
 resource "aws_subnet" "public-subnet2" {
   vpc_id                  = aws_vpc.ProdVPC.id
-  cidr_block              = "10.0.2.0/24"
+  cidr_block              = var.subnet_cidr2
   map_public_ip_on_launch = true
   availability_zone       = "us-east-1b"
 
@@ -129,7 +129,7 @@ resource "aws_security_group" "ProdVPC_SG" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "ProdVPC_SG"
+tags = {
+  Name = var.sg_name
   }
 }
