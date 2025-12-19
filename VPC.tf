@@ -100,7 +100,7 @@ resource "aws_route_table_association" "public_assoc2" {
 # Security Group
 # -----------------------
 resource "aws_security_group" "ProdVPC_SG" {
-  name        = "ProdVPC_SG"
+  name        = var.sg_name
   description = "Security group for ProdVPC"
   vpc_id      = aws_vpc.ProdVPC.id
 
