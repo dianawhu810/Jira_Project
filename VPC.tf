@@ -129,7 +129,7 @@ resource "aws_security_group" "ProdVPC_SG" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-tags = {
-  Name = var.sg_name
-}
+  tags = {
+    Name = var.sg_name
+  }
 }
