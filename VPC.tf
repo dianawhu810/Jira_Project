@@ -9,14 +9,17 @@ terraform {
   }
 }
 
+# -----------------------
+# Provider
+# -----------------------
 provider "aws" {
-  region = var.region
+  region = var.aws_region
 }
 
 # -----------------------
 # VPC
 # -----------------------
-resource "aws_vpc" "this" {
+resource "aws_vpc" "prod_vpc" {
   cidr_block = var.vpc_cidr
 
   tags = {
@@ -27,39 +30,39 @@ resource "aws_vpc" "this" {
 # -----------------------
 # Internet Gateway
 # -----------------------
-resource "aws_internet_gateway" "ProdVPCIGW" {
-  vpc_id = aws_vpc.ProdVPC.id
+resource "aws_internet_gateway" "prod_igw" {
+  vpc_id = aws_vpc.prod_vpc.id
 
   tags = {
-    Name = "ProdVPCIGW"
+    Name = var.igw_name
   }
 }
 
 # -----------------------
 # Public Subnet 1
 # -----------------------
-resource "aws_subnet" "public-subnet1" {
-  vpc_id                  = aws_vpc.ProdVPC.id
-  cidr_block              = var.subnet_cidr1
+resource "aws_subnet" "public_subnet_1" {
+  vpc_id                  = aws_vpc.prod_vpc.id
+  cidr_block              = var.public_subnet_1_cidr
+  availability_zone       = var.public_subnet_1_az
   map_public_ip_on_launch = true
-  availability_zone       = "us-east-1a"
 
   tags = {
-    Name = "public-subnet1"
+    Name = "public-subnet-1"
   }
 }
 
 # -----------------------
 # Public Subnet 2
 # -----------------------
-resource "aws_subnet" "public-subnet2" {
-  vpc_id                  = aws_vpc.ProdVPC.id
-  cidr_block              = var.subnet_cidr2
+resource "aws_subnet" "public_subnet_2" {
+  vpc_id                  = aws_vpc.prod_vpc.id
+  cidr_block              = var.public_subnet_2_cidr
+  availability_zone       = var.public_subnet_2_az
   map_public_ip_on_launch = true
-  availability_zone       = "us-east-1b"
 
   tags = {
-    Name = "public-subnet2"
+    Name = "public-subnet-2"
   }
 }
 
@@ -67,10 +70,10 @@ resource "aws_subnet" "public-subnet2" {
 # Route Table (Public)
 # -----------------------
 resource "aws_route_table" "public_rtb" {
-  vpc_id = aws_vpc.ProdVPC.id
+  vpc_id = aws_vpc.prod_vpc.id
 
   tags = {
-    Name = "public_rtb"
+    Name = var.public_route_table_name
   }
 }
 
@@ -80,37 +83,36 @@ resource "aws_route_table" "public_rtb" {
 resource "aws_route" "default_route" {
   route_table_id         = aws_route_table.public_rtb.id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.ProdVPCIGW.id
+  gateway_id             = aws_internet_gateway.prod_igw.id
 }
 
 # -----------------------
-# Route Table Association
+# Route Table Associations
 # -----------------------
-resource "aws_route_table_association" "public_assoc" {
-  subnet_id      = aws_subnet.public-subnet1.id
+resource "aws_route_table_association" "public_assoc_1" {
+  subnet_id      = aws_subnet.public_subnet_1.id
   route_table_id = aws_route_table.public_rtb.id
 }
 
-resource "aws_route_table_association" "public_assoc2" {
-  subnet_id      = aws_subnet.public-subnet2.id
+resource "aws_route_table_association" "public_assoc_2" {
+  subnet_id      = aws_subnet.public_subnet_2.id
   route_table_id = aws_route_table.public_rtb.id
 }
 
 # -----------------------
 # Security Group
 # -----------------------
-resource "aws_security_group" "ProdVPC_SG" {
-  name        = var.sg_name
-  description = "Security group for ProdVPC"
-  vpc_id      = aws_vpc.ProdVPC.id
+resource "aws_security_group" "prod_sg" {
+  name        = var.security_group_name
+  description = "Security group for ${var.vpc_name}"
+  vpc_id      = aws_vpc.prod_vpc.id
 
-  # Ingress rules
   ingress {
     description = "Allow SSH"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.ssh_allowed_cidr
   }
 
   ingress {
@@ -118,10 +120,9 @@ resource "aws_security_group" "ProdVPC_SG" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.http_allowed_cidr
   }
 
-  # Egress rule (allow all outbound traffic)
   egress {
     from_port   = 0
     to_port     = 0
@@ -130,6 +131,6 @@ resource "aws_security_group" "ProdVPC_SG" {
   }
 
   tags = {
-    Name = var.sg_name
+    Name = var.security_group_name
   }
 }
